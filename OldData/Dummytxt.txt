@@ -1,0 +1,87 @@
+import requests
+import subprocess
+import xml.etree.ElementTree as et
+import yaml
+import  os
+
+def replace(string1, string2, string3):
+    strModified = str.replace(string1, string2, string3)
+    return strModified
+def sum(a,b):
+    sum1=a+b
+    return sum1;
+    
+def replacexpth(string1, string2, string3,string4,string5):
+    strModified = string1.replace(string2, string3)
+    strModified=strModified.replace(string4,string5)
+    return strModified
+
+def replacexpth2(string1, string2, string3,string4,string5):
+    strModified = string1.replace(string2, string3).replace(string4,string5)
+    return strModified
+def appendXpath(str1,str2):
+	return str1+str2
+def ToString(str1):
+	return str(str1)
+
+def changeXpath(*argv):
+    length=len(list(argv))
+    xpath=argv[0]
+    for l in range(1,length,2):
+        xpath=str.replace(xpath,argv[l],argv[l+1])
+    return xpath
+def sendXmlRequest(*argv):
+    xmlFile = open(argv[0]).read()
+    url = argv[1]
+    headers = {'content-type': 'application/soap+xml'}
+    body = xmlFile
+    response = requests.post(url, data=body, headers=headers)
+
+def toInteger(string):
+    return int(string)
+
+def runExe(path):
+    subprocess.call([path])
+
+def transformXML(path, nodes):
+    source = et.parse(path)
+    root = source.getroot()
+    for node in nodes:
+        parenttag = node[0:node.index('#')]
+        childtag = node[node.index('#') + 1:]
+        childloop = 'false'
+        for child in root.iter():
+            if parenttag in str(child.tag):
+                childloop = 'true'
+            elif childtag in str(child.tag) and childloop == 'true':
+                child.text = nodes[node]
+                childloop = 'false'
+                break
+    source.write(path)
+    
+def getQuery(query, **vars):
+    query=str(query)
+    for txtSearch, txtValue in vars.items():
+        query = query.replace(txtSearch,txtValue)
+    print(query)
+    
+def getWebAccountDetails(path, account):
+    try:
+        with open(path) as file:
+            accounts = yaml.load(file, Loader=yaml.FullLoader)
+            for key, value in accounts.items():
+                if key == account:
+                    return value
+                else:
+                    continue
+    except Exception as error:
+        print(error)    
+	
+
+def uploadFile(exepath, filepath):
+    try:
+        os.system(exepath + ' ' + filepath)
+        return 'File Uploaded'
+    except Exception as e:
+        return e
+    

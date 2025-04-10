@@ -1,0 +1,1643 @@
+#import paramiko
+import random
+
+
+##The below method will create inbound file based on the interface type.DOH is the dictionary that has case related  information that needs to be updated
+##in inbound file at run time. For keys not present in dictionary, default value from interface excel sheet will be read and mock file will be created.Do not change the key value/input point in  excel sheet.
+def py_interface_inbound_mockupfile(DOHLIST, Interface,Scenario,Location):
+    import pandas as pd
+    import os
+    TestFilePath=os.getcwd()
+    print(TestFilePath)
+    from datetime import date
+    today = date.today()
+    d1 = today.strftime("%d%Y")
+    d2 = today.strftime("%Y%m%d")
+    d3 = today.strftime("%d%m%y")
+    randomNo = random.randint(111111, 999999)
+    temp = str(randomNo)
+    if Interface == "DOH":
+        data = pd.read_excel(TestFilePath+Location+'\\DOHInterface.xlsx', index_col=False)
+    elif Interface == "HYCF":
+        data = pd.read_excel(TestFilePath+Location+'\\HYCF.xlsx', index_col=False)
+    elif Interface == "DPS":
+        data = pd.read_excel(TestFilePath+Location+'\\DPS.xlsx', index_col=False)
+    elif Interface == "PARISFED":
+        data = pd.read_excel(TestFilePath+Location+'\\PARISFEDERAL.xlsx', index_col=False)
+    elif Interface=="BENDEX":
+        data = pd.read_excel(TestFilePath+Location+'\\BENDEX.xlsx', index_col=False)
+    elif Interface=="BUYINA":
+        data = pd.read_excel(TestFilePath+Location+'\\BUYINPARTA.xlsx', index_col=False)
+    elif Interface=="BUYINB":
+        data = pd.read_excel(TestFilePath+Location+'\\BUYINPARTB.xlsx', index_col=False)
+    else:
+        print("Input is not correct")
+    Dataframe = pd.DataFrame(data)
+    SQLValue = DOHLIST
+    # SQLValue={'LastName':'Baker','FirstName':'Justin','SSN':'576205625','DOB':'19970309','ClientID':'0001128761','DateOfDeath':'20200701'}
+    # print(SQLValue)
+    Temp = ''
+    Final = ''
+    for row_index, row in Dataframe.iterrows():
+        if row['Field'] in SQLValue.keys():
+            Temp = SQLValue[row['Field']]
+        else:
+            Temp = str(row['DEFAULT'])
+        if Temp == "nan":
+            Final = Final + ''.ljust(row['Length'])
+        else:
+            Count = row['Length'] - len(Temp)
+            Final = Final + Temp + ''.ljust(Count)
+    Temp = ''
+    # print(Final)
+    if Interface == "DOH":
+        f = open(TestFilePath+Location+'\\DOH\\DepartmentOfHealthInbound' + d1 + '.txt', 'w+')
+        filename = 'DepartmentOfHealthInbound' + d1
+
+    elif Interface == "HYCF":
+        f = open(TestFilePath+Location+'\\HYCF\\YC' + d2 + '.dlr', 'w+')
+        filename = 'YC' + d2
+    elif Interface == "DPS":
+        f = open(TestFilePath+Location+'\\DPS\\PSK' + d2 + '.dlr', 'w+')
+        filename = 'PSK' + d2
+    elif Interface == "PARISFED":
+        f = open(TestFilePath+Location+'\\PARISFED\\KH.PQ9R2.txt', 'w+')
+        filename = 'KH.PQ9R2'
+    elif Interface == "BENDEX" and Scenario=="AgedSpenddown":
+        f = open(TestFilePath+Location+'\\BENDEX\\Inbound\\AgedSpenddown\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+        filename = 'PUR.BENDEX.A120.'+d2+temp
+        TempString='4BENDEX'+d3
+        f.write(TempString+"\n")
+    elif Interface == "BENDEX" and Scenario=="MandatoryDisabled":
+        f = open(TestFilePath+Location+'\\BENDEX\\Inbound\\MandatoryDisabled\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+        filename = 'PUR.BENDEX.A120.'+d2+temp
+        TempString='4BENDEX'+d3
+        f.write(TempString+"\n")
+    elif Interface == "BENDEX" and Scenario=="StateFundedAgedCOFA":
+        f = open(TestFilePath+Location+'\\BENDEX\\Inbound\\StateFundedAgedCOFA\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+        filename = 'PUR.BENDEX.A120.'+d2+temp
+        TempString='4BENDEX'+d3
+        f.write(TempString+"\n")
+    elif Interface == "BENDEX" and Scenario=="QDWI":
+        f = open(TestFilePath+Location+'\\BENDEX\\Inbound\\QDWI\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+        filename = 'PUR.BENDEX.A120.'+d2+temp
+        TempString='4BENDEX'+d3
+        f.write(TempString+"\n")
+    elif Interface == "BENDEX" and Scenario=="QMB":
+        f = open(TestFilePath+Location+'\\BENDEX\\Inbound\\QMB\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+        filename = 'PUR.BENDEX.A120.'+d2+temp
+        TempString='4BENDEX'+d3
+        f.write(TempString+"\n")
+    elif Interface == "BUYINA":
+        f = open(TestFilePath+Location+'\\BUYIN\\PartA\\PUR.PARTA.TPTABS12.TXT', 'w+')
+        filename = 'PUR.PARTA.TPTABS12'
+        TempString=' PART A     '+d2
+        f.write(TempString+"\n")
+    elif Interface == "BUYINB":
+        f = open(TestFilePath+Location+'\\BUYIN\\PartB\\PUR.PARTB.TPTAB120M.TXT', 'w+')
+        filename = 'PUR.PARTB.TPTAB120M'
+        TempString=' PART B     '+d2
+        f.write(TempString+"\n")
+    else:
+        print("Input is not correct")
+# f=open(TestFilePath+'\TESTDATAFORFILECREATION\DepartmentOfHealthInbound'+d1+'.txt','w+')
+# f=open(TestFilePath+'\TESTDATAFORFILECREATION\HYCF\YC'+d1+'.DLR','w+')
+# f=open(TestFilePath+'\TESTDATAFORFILECREATION\PARISFED\KH.PQ9R2.txt','w+')
+    f.write(Final)
+    f.close()
+# filename='DepartmentOfHealthInbound'+d1
+    return filename
+
+
+##The below method will transfer the inbound file created for respective interface to OAG/SFTP server.
+def py_interface_inbound_SFTP_transfer(filename, Interface,Scenario,Endpoint,Port,UserName,Password,Location):
+    import paramiko
+    import os
+    TestFilePathDir=os.getcwd()
+    print('starting .......Copying Buy-In file from  OAG Server ')
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ########ssh.connect('sit02cvoag01.dhsie.hawaii.gov', 12000, 'koleasoa', 'kolea')
+    ssh.connect(Endpoint, Port, UserName, Password)
+    sftp = ssh.open_sftp()
+    if Interface == "DOH":
+        sftp.put(TestFilePathDir+Location+'\\DOH\\' + filename + '.txt', '/DOH/OUT/' + filename + '.txt')
+    elif Interface == "HYCF":
+        sftp.put(TestFilePathDir+Location+'\\HYCF\\' + filename + '.dlr', '/HYCF/OUT/' + filename + '.dlr')
+    elif Interface == "DPS":
+        sftp.put(TestFilePathDir+Location+'\\DPS\\' + filename + '.dlr', '/DPS/OUT/' + filename + '.dlr')
+    elif Interface == "PARISFED":
+        sftp.put(TestFilePathDir+Location+'\\PARISFED\\' + filename + '.txt','/PARIS/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="BULK":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="AgedSpenddown":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\Inbound\\AgedSpenddown\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="MandatoryDisabled":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\Inbound\\MandatoryDisabled\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="StateFundedAgedCOFA":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\Inbound\\StateFundedAgedCOFA\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="QDWI":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\Inbound\\QDWI\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BENDEX" and Scenario=="QMB":
+        sftp.put(TestFilePathDir+Location+'\\BENDEX\\Inbound\\QMB\\' + filename + '.txt','/BENDEX/OUT/' + filename + '.txt')
+    elif Interface == "BUYINA":
+        sftp.put(TestFilePathDir+Location+'\\BUYIN\\PartA\\' + filename + '.TXT', '/ICSD/MEDICARE_PART_A/OUT/' + filename + '.TXT')
+    elif Interface == "BUYINB":
+        sftp.put(TestFilePathDir+Location+'\\BUYIN\\PartB\\' + filename + '.TXT','/ICSD/SMI_PART_B/OUT/' + filename + '.TXT')
+    else:
+        print("Input is not correct")
+    sftp.close()
+    ssh.close()
+    print('Ending .......Copying Buy-In file from  OAG Server ')
+    print('FileTransfered Sucessfully-Wait for 5-7 mins for poller to pick')
+    
+    
+def py_interface_outbound_SFTP_copytolocal(Interface,Scenario,Part,Endpoint,Port,UserName,Password,Location):
+    import paramiko
+    import os
+    TestFilePathDir=os.getcwd()
+    if Interface == "BENDEX" and Scenario=="AgedSpenddown":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\AgedSpenddown\\'
+    elif Interface == "BENDEX" and Scenario=="MandatoryDisabled":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\MandatoryDisabled\\'
+    elif Interface == "BENDEX" and Scenario=="StateFundedAgedCOFA":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\StateFundedAgedCOFA\\'
+    elif Interface == "BENDEX" and Scenario=="QDWI":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\QDWI\\'
+    elif Interface == "BENDEX" and Scenario=="QMB":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\QMB\\'
+    elif Interface == "BENDEX" and Scenario=="BULK":
+        path=TestFilePathDir+Location+'\\BENDEX\\Outbound\\'    
+    else:
+        path=''
+    
+    print('starting .......Copying Buy-In file from  OAG Server ')
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ##########ssh.connect('sit02cvoag01.dhsie.hawaii.gov', 12000, 'koleasoa', 'kolea')
+    ssh.connect(Endpoint,Port,UserName,Password)
+    sftp = ssh.open_sftp()
+    if Interface == "BENDEX" and Part=="partb":
+        finalpath=path+'KH.PN9E1D.TXT'
+        sftp.get('/ICSD/SMI_PART_B/IN/KH.PN9E1D.TXT',finalpath)
+    elif Interface == "BENDEX" and Part=="parta":
+        finalpath=path+'KH.PN5A1D.TXT'
+        sftp.get('/ICSD/MEDICARE_PART_A/IN/KH.PN5A1D.TXT',finalpath)
+    else:
+        print("Input is not correct")
+    sftp.close()
+    ssh.close()
+    print('Ending .......Copying Buy-In file from  OAG Server ')
+    return finalpath
+        
+
+##The below method is combination of PL/SQL procedure and siebel workflows for DOH interface. This is alternate process to Active batch.
+
+def py_doh1_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    # import secrets
+    # from itertools import islice
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host,DB_Port,service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    dhsie_kies_interface.DOHInbound.DOHInboundMain();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOHInboundOne.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN 
+    dhsie_kies_interface.DOHInbound.ProcessTaskCaseAssoc();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOHInboundTwo.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN 
+    dhsie_kies_interface.DOHInbound.UpdateInterfaceComments();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN 
+    dhsie_kies_interface.KIES_DOH_SIN_NONPRIM_DEAD();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Single_NonPrimary_1.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """  
+    BEGIN 
+    dhsie_kies_interface.KIES_DOH_SIN_NPRIM_DEAD_ASSOC();
+    END;     
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Single_NonPrimary_2.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+
+##The below method is combination of PL/SQL procedure and siebel workflows for HYCF interface. This is alternate process to Active batch.
+
+def py_hycf_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    # import secrets
+    # from itertools import islice
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_HYCF_INBND_PROC_DF_12043();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/HYCF_Incarceration.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_HYCF_INBND_ASS_PROC();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/HYCF_Incaceration_CaseAss.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+
+##The below method is combination of PL/SQL procedure and siebel workflows for PARISFEDERAL interface. This is alternate process to Active batch.
+
+def py_parisfederal_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    # import secrets
+    # from itertools import islice
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_PARIS_FEDERAL_ACT_PROC();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+    
+    time.sleep( 10 )
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/FederalAct.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    time.sleep( 10 )
+    
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_PARIS_FEDERAL_UPDATE_FK();
+    commit;
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    time.sleep( 10 )
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_PARIS_FEDERAL_ASS_PROC();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    time.sleep( 10 )
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/Federal_Case_Activity.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+    
+    time.sleep( 10 )
+    # running .IFB file     
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh \"run task for comp WfProcBatchMgr with ProcessName=\'KIES Convert SR To Task WFP\',SearchSpec=\'([Sub Type] = \\"DPS\\" OR [Sub Type] = \\"HYCF\\" OR [Sub Type] = \\"DOH\\" OR [Sub Type] = \\"HSAG\\" OR [Sub Type] = \\"PARIS\\") AND [Service Group] IS NULL\'\" ')
+    print('Ending.... .IFB file ')
+    
+    
+##This below job will run sieble workflow for LTC LOC Ending
+def py_ltc_locending_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    
+    print('Starting.... .LTC_LOCendingProcess ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES LOC Expiry Alert WF\',SearchSpec=\'[End Date] = Today()+59 AND [End Date] > Today()\'"')
+    print('Ending.... .LTC_LOCendingProcess ')
+    print('Sleep for 30 seconds for Batch to take Effect')
+
+
+def py_ltc_locinterviewpastdate_sqlfile(rowid,date):
+    import os
+    TestFilePath=os.getcwd()
+    Temp="Update siebel.s_evt_act set CREATED='"+date+"',ACT_CREATED_DT='"+date+"',TODO_PLAN_START_DT='"+date+"' where ROW_ID='"+rowid+"';commit;"
+    f=open(TestFilePath+'\KALO\Interface\TESTDATAFORFILECREATION\Command.sql','w+')
+    f.write(Temp)
+    f.close()
+    
+def py_ltc_locinterviewpast_activebatch():
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    
+    print('Starting.... .ProcessChange ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES LTC Interview Alert Past Due WF\',SearchSpec=\'[Type] = \\\'LTC Interview\\\' AND [Status] = \\\'Scheduled\\\' AND [Planned] = Today() -1\'"')
+    
+    
+    
+#def getPersonNo():
+#    try:
+#        randomNo = random.randint(111111111, 999999999)
+#        ffmNo = str(randomNo)
+#        return ffmNo
+#    except Exception as error:
+#        print(error)
+
+def py_bendex_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+
+    # running DB inbound Inbound  PROC
+    print('Starting.... DB procedure for BENDEX ')
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+    BEGIN
+    dhsie_kies_interface.KIES_BNDX_MLY_IB_SURVIVE_PLSQL();
+    END;
+    """
+    c.execute(SQL)
+    conn.close()
+    print('Ending..... DB procedure for BENDEX  ')
+
+    print('Starting.... DB procedure for BENDEX EIM ')
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+    BEGIN
+    dhsie_kies_interface.kies_bendex_dly_ib_eimplsql();
+    END;
+    """
+    c.execute(SQL)
+    conn.close()
+    print('Ending..... DB procedure for BENDEX EIM  ')
+
+    # running .IFB file
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/Bendex.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """   
+    select max(net_amount_1) from siebel.cx_kies_bendex
+    """
+    c.execute(SQL)
+    lastBatchNumber = c.fetchone()[0]
+    print(lastBatchNumber)
+    conn.close()
+
+    updateQuery = 'update siebel.cx_kies_bendex set net_amount_1 =' + str(lastBatchNumber) + '+1 where net_amount_1 is null'
+    print(updateQuery)
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    c.execute(updateQuery)
+    conn.commit()
+    conn.close()
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+    select max(net_amount_1) from siebel.cx_kies_bendex
+    """
+    c.execute(SQL)
+    maxBatchNumber = c.fetchone()[0]
+    print(maxBatchNumber)
+    conn.close()
+
+    # running .IFB file
+    try:
+        print('Starting.... .IFB file ')
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+        stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\\\"KIES BENDEX Interface WFP\\\",SearchSpec=\\\"[Batch Process Number] = \'' + str(
+            maxBatchNumber) + '\'\\\""')
+        print('Ending.... .IFB file ')
+        print(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\\\"KIES BENDEX Interface WFP\\\",SearchSpec=\\\"[Batch Process Number] = \'' + str(
+            maxBatchNumber) + '\'\\\""')
+        client.close()
+    except:
+        pass
+
+def py_bendex_partb(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,SOA_SOAP_WSDL_Endpoint):
+    import os
+    import xml
+    import suds    #pip install suds-py3  , this is for python3
+    import time 
+    import glob
+    import shutil 
+    import string
+    import random
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    
+    #import secrets
+    #from itertools import islice
+    
+    
+    """
+    
+    1)Run outbound procedures
+    2)Run soapui web service to generate outbound file.
+        run post process DB scripts --not implimented
+    3)copying oubound file into local 
+    4)generate inbound file using oubound file .
+    5)copy inbound file into OAG server
+    6)wait for 5 mins to process inbound file 
+    7)run DB inbound procs to load EIM tables 
+    8)run .IFB file to load/update base tables 
+
+    """
+    
+    
+    if not os.path.exists('output_data'):
+        os.makedirs('output_data')
+
+    if __name__ == '__main__':
+        scriptpath = os.path.realpath(__file__)
+        print("Script path is : " + scriptpath)
+        dirpath = os.getcwd()
+        outbound_path=dirpath+r'\input_data'
+        print("outbound_path is : " + outbound_path)
+
+
+    #running DB outbound scripts 
+    print('Starting.... DB outbound procedure for PART-B')
+    print(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password)
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    #conn = cx_Oracle.connect(user='SOBIREDDY', password='TikTok2020', dsn=dsn_tns) 
+    c = conn.cursor()
+    print(' .......... Executing   SIEBEL.MEDICAREOUTBOUND.PartBOutboundMain ')
+    c.callproc( ' SIEBEL.MEDICAREOUTBOUND.PartBOutboundMain' )
+    conn.close()
+    print('Ending..... DB outbound procedure for PART-B ')
+
+    
+    # running Soap-UI script for part-A
+    print('starting ....Web service to generate Buy-in PART-B outbound file  .')
+
+    try:
+        ##url="http://sit02cvsoa01.dhsie.hawaii.gov:8101/KOLEA/SupplementaryMedicalInsurancePartBBuyInOutbound_PS"
+        url=SOA_SOAP_WSDL_Endpoint+":8101/KOLEA/SupplementaryMedicalInsurancePartBBuyInOutbound_PS"
+        r=Client(url).service.Request(1234)
+    except (xml.parsers.expat.ExpatError,xml.sax._exceptions.SAXParseException):
+        print('......BENDEX outbound file generation done from webservice')  
+
+    print('ending ....Web service to generate Buy-in PART-B outbound file  .') 
+
+    time.sleep( 30 )
+    print ("Ending.... wait for 30 seconds  : %s" % time.ctime())
+    
+    
+def  read_data_from_outboundfile(HICN, ob_path):
+    print(ob_path)
+    with open(ob_path, 'r') as file:
+        for line in file:
+            HICN_File=line[0:12].rstrip()
+            if(HICN_File==HICN):
+                Date=line[82:88]
+                Code=line[52:53]
+                SSN=line[61:70]
+                LastName=line[12:36].rstrip()
+                FirstName=line[36:51].rstrip()
+                DOB=line[53:61]
+                Agencycode=line[72:75]
+                Transcode=line[75:77]
+                ClientID=line[100:120].rstrip()
+                return Date,Code,SSN,Agencycode,Transcode,ClientID,LastName,FirstName,DOB
+    
+
+def py_bendex_parta(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,SOA_SOAP_WSDL_Endpoint):
+    import os
+    import xml
+    import suds    #pip install suds-py3  , this is for python3
+    import time 
+    import glob
+    import shutil 
+    import string
+    import random
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    
+    #import secrets
+    #from itertools import islice
+    
+    
+    """
+    
+    1)Run outbound procedures
+    2)Run soapui web service to generate outbound file.
+        run post process DB scripts --not implimented
+    3)copying oubound file into local 
+    4)generate inbound file using oubound file .
+    5)copy inbound file into OAG server
+    6)wait for 5 mins to process inbound file 
+    7)run DB inbound procs to load EIM tables 
+    8)run .IFB file to load/update base tables 
+    
+    """
+    
+
+    if not os.path.exists('output_data'):
+        os.makedirs('output_data')
+
+    if __name__ == '__main__':
+        scriptpath = os.path.realpath(__file__)
+        print("Script path is : " + scriptpath)
+        dirpath = os.getcwd()
+        outbound_path=dirpath+r'\input_data'
+        print("outbound_path is : " + outbound_path)
+
+    
+    #running DB outbound scripts 
+    print('Starting.... DB outbound procedure for PART A')
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    #conn = cx_Oracle.connect(user='SOBIREDDY', password='TikTok2020', dsn=dsn_tns) 
+    c = conn.cursor()
+    print(' .......... Executing  SIEBEL.MEDICAREOUTBOUND.PartAOutboundMain ')
+    c.callproc( 'SIEBEL.MEDICAREOUTBOUND.PartAOutboundMain' )
+    conn.close()
+    print('Ending..... DB outbound procedure for PART-A ')
+
+    
+    # running Soap-UI script for part-A
+    print('starting ....Web service to generate BENDEX outbound file  .')
+    
+    try:
+        ##url="http://sit02cvsoa01.dhsie.hawaii.gov:8101/KOLEA/MedicarePartABuyInOutbound_PS"
+        url=SOA_SOAP_WSDL_Endpoint+":8101/KOLEA/MedicarePartABuyInOutbound_PS"
+        r=Client(url).service.Request(1234)
+    except (xml.parsers.expat.ExpatError,xml.sax._exceptions.SAXParseException):
+        print('......BENDEX outbound file generation done from webservice')  
+
+    print('ending ....Web service to generate Buy-in PART-A outbound file  .') 
+    
+    time.sleep( 30 )
+    print ("Ending.... wait for 30 seconds  : %s" % time.ctime())
+        
+    
+    
+def py_doh_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+	import os
+	import xml
+	import suds    #pip install suds-py3  , this is for python3
+	import time 
+	import glob
+	import shutil
+	import string
+	import random
+	import calendar
+	import datetime
+	import paramiko
+	import cx_Oracle
+	from suds.client import Client
+	#import secrets
+	#from itertools import islice
+
+
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	 dhsie_kies_interface.DOHInbound.DOHInboundMain();
+	END;
+
+	"""
+	print("PROC01")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOHInboundOne.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+	time.sleep( 10 )
+
+	#Proc
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.DOHInbound.ProcessTaskCaseAssoc();
+	END;
+
+	"""
+	print("PROC02")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOHInboundTwo.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+	time.sleep( 10 )
+
+	#Proc
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.DOHInbound.UpdateInterfaceComments();
+	END;
+
+	"""
+	print("PROC03")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	#Proc
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.KIES_DOH_SIN_NONPRIM_DEAD();
+	END;
+
+	"""
+	print("PROC04")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Single_NonPrimary_1.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+	time.sleep( 10 )
+
+	#Proc
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.KIES_DOH_SIN_NPRIM_DEAD_ASSOC();
+	END;
+
+	"""
+	print("PROC05")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Single_NonPrimary_2.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+	time.sleep( 10 )
+
+	#Multi Primary 
+
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.KIES_DOH_MUL_HH_PRI_DEAD();
+	END;
+
+	"""
+	print("PROC06")
+	c.execute(SQL)
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Multi_Primary_1.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+	time.sleep( 10 )
+
+	#Proc
+	dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+	conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+	c = conn.cursor()
+	SQL = """
+
+	BEGIN 
+	dhsie_kies_interface.KIES_DOH_MUL_HH_PRI_ASSOC();
+	END;
+
+	"""
+	c.execute(SQL)
+	print("PROC07")
+	conn.close()
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/DOH_Multi_Primary_2.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+	print('Ending.... .IFB file ')
+
+
+	time.sleep( 10 )
+
+	# running .IFB file     
+	print('Starting.... .IFB file ')
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+	stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh \"run task for comp WfProcBatchMgr with ProcessName=\'KIES Convert SR To Task WFP\',SearchSpec=\'([Sub Type] = \\"DPS\\" OR [Sub Type] = \\"HYCF\\" OR [Sub Type] = \\"DOH\\" OR [Sub Type] = \\"HSAG\\" OR [Sub Type] = \\"PARIS\\") AND [Service Group] IS NULL\'\" ')
+	print('Ending.... .IFB file ')
+
+def py_Avs_UpdateTransactionDate_sqlfile(SSN,date):
+    import os
+    TestFilePath=os.getcwd()
+    #Temp="Update siebel.s_evt_act set CREATED='"+date+"',ACT_CREATED_DT='"+date+"',TODO_PLAN_START_DT='"+date+"' where ROW_ID='"+rowid+"';commit;"
+    Temp="Update PRD_MDS.AVS_Request set THRESHOLD_TIME='"+date+"' where SSN='"+SSN+"';commit;"
+    f=open(TestFilePath+'\AVS\TESTDATAFORFILECREATION\TransactionTime.sql','w+')
+    f.write(Temp)
+    f.close()
+ 
+def py_Avs_UpdateResponseIndicator_sqlfile(transactionID):
+    import os
+    TestFilePath=os.getcwd()
+    Temp="Update PRD_MDS.AVS_RESPONSE_DETAILS set RESPONSEINDICATOR='false',RESPONSEREASONCODE='AAA' where TRANS_ID='"+transactionID+"';commit;"
+    f=open(TestFilePath+'\AVS\TESTDATAFORFILECREATION\ResponseIndicator.sql','w+')
+    f.write(Temp)
+    f.close()
+
+#this code is being used for HPIMSS in priya code    
+def py_read_data_from_SDXFile(Inbound_Path):
+    print(Inbound_Path)
+    count=0
+    Finallist=[]
+    with open(Inbound_Path, 'r') as file:
+        for line in file:
+            Finallist.append([])
+            Finallist[count].append(line[42:51])
+            Finallist[count].append(line[102:109])
+            Finallist[count].append(line[1434:1440])
+            Finallist[count].append(line[1441:1447])
+            Finallist[count].append(line[1455:1463])
+            temp=line[1960:1968]
+            temp=temp.strip()
+            Finallist[count].append(temp)
+            Finallist[count].append(line[1539:1541])
+            count+=1
+    return Finallist
+    
+def py_doh_sdxbatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds    #pip install suds-py3  , this is for python3
+    import time 
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    #import secrets
+    #from itertools import islice
+
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.kies_sdx_ib_process_plsql();
+    END;
+
+    """
+    print("PROC01")
+    c.execute(SQL)
+    conn.close()
+
+    time.sleep( 10 )
+    
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.kies_sdx_dly_ib_plsql();
+    END;
+
+    """
+    print("PROC02")
+    c.execute(SQL)
+    conn.close()
+    
+    
+    
+
+    # running .IFB file     
+    print('Starting.... .IFB file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/sdx.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .SDXIFB file ')
+
+    ###done till here
+    time.sleep( 10 )
+
+
+
+    print('Starting.... .LTC_LOCendingProcess ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES SDX Interface WFP\',SearchSpec=\'[Batch Process Number] = ''\'"')
+    print('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES SDX Interface WFP\',SearchSpec=\'[Batch Process Number] = ''\'"')
+    print('Ending.... .SDXCendingProcess ')
+    print('Sleep for 30 seconds for Batch to take Effect')
+
+
+def py_ffm_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds    #pip install suds-py3  , this is for python3
+    import time 
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    #import secrets
+    #from itertools import islice
+
+    print('Starting.... .FFM Workflow Process ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES FFM Outbound Retry WF\',SearchSpec=\'([Retry Count] = \\\"0\\\" OR [Retry Count] = \\\"1\\\" OR [Retry Count] = \\\"2\\\" OR [Retry Count] = \\\"3\\\") AND [Transfer Direction] = \\\"Outbound Transfer\\\" AND [Transfer Status] = \\\"E-Failure\\\"\'"')
+    print('sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES FFM Outbound Retry WF\',SearchSpec=\'([Retry Count] = \\\"0\\\" OR [Retry Count] = \\\"1\\\" OR [Retry Count] = \\\"2\\\" OR [Retry Count] = \\\"3\\\") AND [Transfer Direction] = \\\"Outbound Transfer\\\" AND [Transfer Status] = \\\"E-Failure\\\"\'"  ')
+    print('Ending.... .FFM Workflow Process ')
+    
+    time.sleep( 10 )
+    
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    c = conn.cursor()
+    SQL = """
+
+    DECLARE
+    BEGIN
+    DHSIE_KIES_INTERFACE.AT_DENIAL_DE_BATCHING(3800,16);
+    COMMIT; 
+    END;
+
+    """
+    print("PROC01")
+    c.execute(SQL)
+    conn.close()
+
+    time.sleep( 10 )
+    
+    
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    c = conn.cursor()
+    SQL = """
+
+    DECLARE
+    BEGIN
+    DHSIE_KIES_INTERFACE.AT_DENIAL_DE_BATCHING(1800,16);
+    COMMIT; 
+    END;
+
+    """
+    print("PROC02")
+    c.execute(SQL)
+    conn.close()
+    
+    time.sleep( 10 )
+    
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns) 
+    c = conn.cursor()
+    print("PROC03")
+    c.execute("Select max(X_KIES_BATCH_NO) from SIEBEL.CX_OG_PLN_IT_XM where X_KIES_BATCH_NO <100")
+    val = c.fetchone()
+    val=val[0]
+    val=int(val)
+    val=val+1
+    conn.close()
+    
+    time.sleep( 10 )
+
+    for itr in range(10,val):
+        print('Starting.... .FFM Workflow in loop{0} Process'.format(itr))
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+        stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES FFM AT Denial Outbound WFP\',SearchSpec=\'([ConInterSntDt] IS NULL AND [BPlnSts] = \\\"Active\\\" AND [CsTp] = \\\"Medicaid\\\" AND [BPLStat] = \\\"Not Approved\\\" AND [FFMApReasCod] = \\\"Y\\\" AND [IntCaseId] = [Case Id]) and [KIES Thread Batch Num]='+str(itr)+'\'"')
+        print('Ending.... .FFM Workflow in loop{0} Process'.format(itr))
+    
+    time.sleep( 10 )
+    
+    print('Starting.... .FFM Workflow 3 Process')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp WfProcBatchMgr with ProcessName=\'KIES FFM AT Outbound Referral Status Update WF\',SearchSpec=\'[Transfer Direction] = \\\"Inbound Transfer\\\" AND [Acknowledged] = \\\"N\\\"\'"')
+    print('Ending.... .FFM Workflow 3 Process ')
+    
+    
+def py_dps_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+    # import secrets
+    # from itertools import islice
+
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+   DHSIE_KIES_INTERFACE.KIES_DPS_INBND_PROC();
+    commit;
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+    
+    time.sleep( 10 )
+
+    # running .IFB file
+    print('Starting.... .First Workflow  file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=\'/u01/app/siebel/8.2.2/ses/siebsrvr/admin/Incaceration.ifb\',ErrorFlags=1,LogDir=\'/u01/app/siebel/8.2.2/ses/siebsrvr/admin\',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .IFB file ')
+
+    # Proc
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+
+    BEGIN
+    DHSIE_KIES_INTERFACE.KIES_DPS_INBND_ASS_PROC();
+    END;
+
+    """
+    c.execute(SQL)
+    conn.close()
+
+    time.sleep( 10 )
+    
+    # running .IFB file
+    print('Starting.... .2 nd Workflow file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=\'/u01/app/siebel/8.2.2/ses/siebsrvr/admin/Incaceration_CaseAss.ifb\',ErrorFlags=1,LogDir=\'/u01/app/siebel/8.2.2/ses/siebsrvr/admin\',SQLFlags=1,TraceFlags=8"; date')
+    print('Ending.... .2 nd Workflow file ')
+    
+    print('Starting.... .3rd Workflow file ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint,port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command('cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh \"run task for comp WfProcBatchMgr with ProcessName=\'KIES Convert SR To Task WFP\',SearchSpec=\'([Sub Type] = \\"DPS\\" OR [Sub Type] = \\"HYCF\\" OR [Sub Type] = \\"DOH\\" OR [Sub Type] = \\"HSAG\\" OR [Sub Type] = \\"PARIS\\") AND [Service Group] IS NULL\'\" ')
+    print('Ending.... .3rd Workflow file ')
+    
+    
+def py_interface_bulkinbound_mockupfile(CaseList,Interface,Location):
+    import pandas as pd
+    import os
+    import time
+    import shutil
+    TestFilePath=os.getcwd()
+    print(TestFilePath)
+    from datetime import date
+    today = date.today()
+    d1 = today.strftime("%d%Y")
+    d2 = today.strftime("%Y%m%d")
+    d3 = today.strftime("%d%m%y")
+    Epctime = str(int(time.time()))
+    randomNo = random.randint(111111, 999999)
+    temp = str(randomNo)
+    if Interface == "DPS":
+        data = pd.read_excel(TestFilePath+Location+'\\DPS.xlsx', index_col=False)
+    elif Interface == "HYCF":
+        data = pd.read_excel(TestFilePath+Location+'\\HYCF.xlsx', index_col=False)
+    elif Interface=="BENDEX":
+        data = pd.read_excel(TestFilePath+Location+'\\BENDEX.xlsx', index_col=False)
+    elif Interface=="BUYINA":
+        data = pd.read_excel(TestFilePath+Location+'\\BUYINPARTA.xlsx', index_col=False)
+    elif Interface=="BUYINB":
+        data = pd.read_excel(TestFilePath+Location+'\\BUYINPARTB.xlsx', index_col=False)
+    else:
+        print("Input is not correct")
+    Dataframe = pd.DataFrame(data)
+    #SQLValue = CaseList
+    # SQLValue={'LastName':'Baker','FirstName':'Justin','SSN':'576205625','DOB':'19970309','ClientID':'0001128761','DateOfDeath':'20200701'}
+    # print(SQLValue)
+    #Temp = ''
+    #Final = ''
+    count=0
+    
+    for itr in CaseList:
+        Final = ''
+        Temp = ''
+        SQLValue={}
+        if Interface == "DPS" or Interface == "HYCF":
+            
+            SQLValue['LastName']=itr[8]
+            SQLValue['FirstName']=itr[6]
+            SQLValue['SSN']=itr[10]
+            SQLValue['DOB']=itr[9]
+            SQLValue['ClientID']=itr[5]
+            SQLValue['ParticipationStartDate']=itr[11]
+            SQLValue['ParticipationEndDate']=itr[12]
+        elif Interface=="BENDEX":
+            SQLValue['LastName']=itr[8]
+            SQLValue['FirstName']=itr[6]
+            SQLValue['SSN']=itr[10]
+            SQLValue['DOB']=itr[9]
+            SQLValue['ClientID']=itr[5]
+            SQLValue['BENDEXDATE']=itr[11]
+            SQLValue['PAYMENTCODE']=itr[14]
+        elif Interface=="BUYINA" or Interface=="BUYINB":
+            SQLValue['LastName']=itr[8]
+            SQLValue['FirstName']=itr[6]
+            SQLValue['SSN']=itr[10]
+            SQLValue['DOB']=itr[9]
+            SQLValue['ClientID']=itr[5]
+            SQLValue['StartDate']=itr[13]
+            if itr[17] is None:
+                SQLValue['MedicareNumber']='Null'
+            else:
+                SQLValue['MedicareNumber']=itr[17]   
+        else:
+            print("Input is not correct")
+        
+        for row_index, row in Dataframe.iterrows():
+            if row['Field'] in SQLValue.keys():
+                Temp = SQLValue[row['Field']]
+            else:
+                Temp = str(row['DEFAULT'])
+            if Temp == "nan":
+                Final = Final + ''.ljust(row['Length'])
+            else:
+                Count = row['Length'] - len(Temp)
+                Final = Final + Temp + ''.ljust(Count) 
+        if Interface == "DPS":
+            if count==0:
+                f = open(TestFilePath+Location+'\\DPS\\PSK' + d2 + '.dlr', 'w+')
+                ArchivePath=TestFilePath+Location+'\\DPS\\Archive\\'
+                IBFileName=TestFilePath+Location+'\\DPS\\PSK' + d2 + '.dlr'
+                Extension='dlr'
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\DPS\\DPSFile.txt', 'w+')
+                OutputFileName=TestFilePath+Location+'\\OUTPUT\\DPS\\DPSFile.txt'
+                OutputFileArchivePath=TestFilePath+Location+'\\OUTPUT\\DPS\\Archive\\'
+                w.write("CaseNumber,ClientID,SSN,TestCase"+"\n")
+                w.write(str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[13])+"\n")
+            else:
+                f = open(TestFilePath+Location+'\\DPS\\PSK' + d2 + '.dlr', 'a')
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\DPS\\DPSFile.txt', 'a')
+                w.write(str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[13])+"\n")
+            filename = 'PSK' + d2
+            f.close()
+            w.close()
+        elif Interface == "HYCF":
+            if count==0:
+                f = open(TestFilePath+Location+'\\HYCF\\YC' + d2 + '.dlr', 'w+')
+                ArchivePath=TestFilePath+Location+'\\HYCF\\Archive\\'
+                IBFileName=TestFilePath+Location+'\\HYCF\\YC' + d2 +'.dlr'
+                Extension='dlr'
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\HYCF\\HYCFFile.txt', 'w+')
+                OutputFileName=TestFilePath+Location+'\\OUTPUT\\HYCF\\HYCFFile.txt'
+                OutputFileArchivePath=TestFilePath+Location+'\\OUTPUT\\HYCF\\Archive\\'
+                w.write("CaseNumber,ClientID,SSN,TestCase"+"\n")
+                w.write(str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[13])+"\n")
+            else:
+                f = open(TestFilePath+Location+'\\HYCF\\YC' + d2 + '.dlr', 'a')
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\HYCF\\HYCFFile.txt', 'a')
+                w.write(str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[13])+"\n")
+            filename = 'YC' + d2
+            f.close()
+            w.close()
+        elif Interface == "BENDEX":
+            if count==0:
+                f = open(TestFilePath+Location+'\\BENDEX\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'w+')
+                ArchivePath=TestFilePath+Location+'\\BENDEX\\Archive\\'
+                IBFileName=TestFilePath+Location+'\\BENDEX\\PUR.BENDEX.A120.'+d2+temp+'.txt'
+                Extension='txt'              
+                TempString='4BENDEX'+d3
+                f.write(TempString+"\n")
+                f.write(Final+"\n")  
+                w = open(TestFilePath+Location+'\\OUTPUT\\BENDEX\\BendexFile.txt', 'w+')
+                OutputFileName=TestFilePath+Location+'\\OUTPUT\\BENDEX\\BendexFile.txt'
+                OutputFileArchivePath=TestFilePath+Location+'\\OUTPUT\\BENDEX\\Archive\\'
+                w.write("Benefit,CaseNumber,ClientID,SSN,LastName,FirstName,DOB,BendexStartDate,BillingStartDate,PaymentCode,NA,RunDate"+"\n")
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+",NA,"+str(itr[16])+"\n")
+            else:
+                f = open(TestFilePath+Location+'\\BENDEX\\PUR.BENDEX.A120.'+d2+temp+'.txt', 'a')
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\BENDEX\\BendexFile.txt', 'a')
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+",NA,"+str(itr[16])+"\n")
+            filename = 'PUR.BENDEX.A120.'+d2+temp
+            f.close()
+            w.close()
+        elif Interface == "BUYINA":
+            if count==0:
+                f = open(TestFilePath+Location+'\\BUYIN\\PartA\\PUR.PARTA.TPTABS12.TXT', 'w+')
+                ArchivePath=TestFilePath+Location+'\\BUYIN\\PartA\\Archive\\'
+                IBFileName=TestFilePath+Location+'\\BUYIN\\PartA\\PUR.PARTA.TPTABS12.TXT'
+                TempString=' PART A     '+d2
+                Extension='TXT'
+                f.write(TempString+"\n")
+                f.write(Final+"\n")  
+                w = open(TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartA\\BuyinFileA.txt', 'w+')
+                OutputFileName=TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartA\\BuyinFileA.txt'
+                OutputFileArchivePath=TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartA\\Archive\\'
+                w.write("Benefit,CaseNumber,ClientID,SSN,LastName,FirstName,DOB,BendexStartDate,BillingStartDate,PaymentCode,MedicareInsuranceNumber,RunDate"+"\n")
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+","+str(itr[17])+","+str(itr[16])+"\n")
+            else:
+                f = open(TestFilePath+Location+'\\BUYIN\\PartA\\PUR.PARTA.TPTABS12.TXT', 'a')
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartA\\BuyinFileA.TXT', 'a')
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+","+str(itr[17])+","+str(itr[16])+"\n")
+                
+            filename = 'PUR.PARTA.TPTABS12'
+            f.close()
+            w.close()
+        elif Interface == "BUYINB":
+            if count==0:
+                f = open(TestFilePath+Location+'\\BUYIN\\PartB\\PUR.PARTB.TPTAB120M.TXT', 'w+')
+                ArchivePath=TestFilePath+Location+'\\BUYIN\\PartB\\Archive\\'
+                IBFileName=TestFilePath+Location+'\\BUYIN\\PartB\\PUR.PARTB.TPTAB120M.TXT'
+                Extension='TXT'
+                TempString=' PART B     '+d2
+                f.write(TempString+"\n")
+                f.write(Final+"\n")  
+                w = open(TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartB\\BuyinFileB.txt', 'w+')
+                OutputFileName=TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartB\\BuyinFileB.txt'
+                OutputFileArchivePath=TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartB\\Archive\\'
+                w.write("Benefit,CaseNumber,ClientID,SSN,BendexStartDate,LastName,FirstName,DOB,BillingStartDate,PaymentCode,MedicareInsuranceNumber,RunDate"+"\n")
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+","+str(itr[17])+","+str(itr[16])+"\n")
+            else:
+                f = open(TestFilePath+Location+'\\BUYIN\\PartB\\PUR.PARTB.TPTAB120M.TXT', 'a')
+                f.write(Final+"\n")
+                w = open(TestFilePath+Location+'\\OUTPUT\\BUYIN\\PartB\\BuyinFileB.TXT', 'a')
+                w.write(str(itr[15])+","+str(itr[0])+","+str(itr[5])+","+str(itr[10])+","+str(itr[8])+","+str(itr[6])+","+str(itr[9])+","+str(itr[12])+","+str(itr[13])+","+str(itr[14])+","+str(itr[17])+","+str(itr[16])+"\n")
+                
+            filename = 'PUR.PARTB.TPTAB120M'
+            f.close()
+            w.close()
+        else:
+            
+            print("Input is not correct") 
+        count=count+1
+    ArchiveFileName=ArchivePath+filename+'_'+Epctime+'.'+Extension
+    OutputArchiveFileName=OutputFileArchivePath+Interface+'_'+Epctime+'.txt'
+    shutil.copy2(IBFileName,ArchiveFileName)
+    shutil.copy2(OutputFileName,OutputArchiveFileName)
+    return filename
+    
+def py_read_data_from_DPSorHYCFFile(Inbound_Path):
+    count=0
+    print(Inbound_Path)
+    Finallist=[]
+    with open(Inbound_Path,'r') as file:
+        for line in file:
+            Finallist.append([])
+            Finallist[count].append(line[0:11])
+            Finallist[count].append(line[12:22])
+            count+=1
+    return Finallist
+    
+def py_read_data_from_DPSorHYCFFile_Pandas(Inbound_Path):
+    import pandas as pd
+    Data = pd.read_csv(Inbound_Path,dtype = str)
+    Data_Frame = pd.DataFrame(Data)
+    Data_Frame=[Data_Frame.columns.values.tolist()]+Data_Frame.values.tolist()
+    return Data_Frame
+
+def py_read_data_from_BendexorBuyIn_Pandas(Inbound_Path,Benefit):
+    import pandas as pd
+    Data = pd.read_csv(Inbound_Path,dtype = str)
+    Data_Frame = pd.DataFrame(Data)
+    row=Data_Frame[Data_Frame.Benefit==Benefit]
+    row=row.values.tolist()
+    return row
+  
+def py_read_data_from_BendexInputList_Pandas(Inbound_Path):
+    import pandas as pd
+    Data = pd.read_excel(Inbound_Path)
+    Data_Frame = pd.DataFrame(Data)
+    row=Data_Frame.values.tolist()
+    return row  
+    
+ 
+def py_getLastMonth_SpecificDay(DayType,Iteration):
+    import numpy
+    from datetime import date, timedelta
+    last_day_of_prev_month = date.today().replace(day=1) - timedelta(days=1)
+    #Format is YYYY-MM
+    yearMonth = last_day_of_prev_month.strftime("%Y-%m")
+    date = numpy.busday_offset(yearMonth, Iteration,roll='forward',weekmask=DayType)
+    date=date.item().strftime("%m/%d/%Y")
+    return  date  
+    
+def py_Add_Month_toDate(Date,Number):
+    num=int(Number)
+    import dateutil
+    from dateutil.relativedelta import relativedelta
+    import datetime
+    #a_date = datetime.datetime.strptime(Date, "%Y-%m-%d")
+    a_date = datetime.datetime.strptime(Date, "%Y%m%d")
+    a_month = dateutil.relativedelta.relativedelta(months=num)
+    date_plus_month = a_date + a_month
+    date_plus_month=date_plus_month.strftime("%Y%m%d")
+    return date_plus_month
+    
+    
+def py_InsurancePlan_Updation_Sqlfile(rowid,ClientId):
+    import os
+    TestFilePath=os.getcwd()
+    Temp="INSERT INTO dhsie_kies_interface.kies_hpmmis_ib_daily (HAWI_ID,PROCESS_DAT,MED_START_DAT,MED_PLAN_ID,DENTAL_START_DAT,DENTAL_PLAN_ID,BH_START_DAT,BH_PLAN_ID,MDC_CLM_ID,MDC_MBI,error_desc1,error_desc2,error_desc3,error_desc4,CREATED,contact_id) values ('"+ClientId+"','20200101','20200101','XUNITD','20200101','ANYFFS','20200101','OHANBH','343535541B1','4A23QH4AC32','SUCCESS: MBI Number has been validated','IGNORE: MBI Number already matches active MBI for the contact','SUCCESS: SSA style HICN has been validated','PROCEED: HICN Number does not match active HICN for the contact','20200101','"+rowid+"');commit;"
+    f=open(TestFilePath+'\InterfaceUpgrades\TESTDATAFORFILECREATION\Query\Command.sql','w+')
+    f.write(Temp)
+    f.close()
+    
+def py_Buyin_PartA_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+
+    #running first procedure for Medicare Buyin-A Inbound Interface
+    print('Starting.... Medicare Buyin-A Inbound Interface ')
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+    DECLARE 
+    PROCSTAT VARCHAR2(32767);
+    BEGIN 
+    PROCSTAT := NULL;
+    SIEBEL.KIES_MDCR_PRTA_IB_PLSQL ( PROCSTAT );
+    DBMS_OUTPUT.Put_Line('PROCSTAT = ' || PROCSTAT);
+    DBMS_OUTPUT.Put_Line('');
+    COMMIT; 
+    END;
+    """
+    c.execute(SQL)
+    conn.close()
+    print('Ending..... Medicare Buyin-A Inbound Interface  ')
+
+    
+    # running .IFB file
+    print('Starting.... .Siebel workflow for Medicare Buyin-A Inbound Interface ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/KIES_MED_PARTA.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')    
+    print('Ending.... .Siebel workflow for Medicare Buyin-A Inbound Interface ')
+    
+def py_Buyin_PartB_activebatch(DB_Host,DB_Port,DB_Service,DB_UserName,DB_Password,AB_Endpoint,AB_Port,AB_UserName,AB_Password):
+    import os
+    import xml
+    import suds  # pip install suds-py3  , this is for python3
+    import time
+    import glob
+    import shutil
+    import string
+    import random
+    import calendar
+    import datetime
+    import paramiko
+    import cx_Oracle
+    from suds.client import Client
+
+    #running first procedure for Medicare Buyin-A Inbound Interface
+    print('Starting.... Medicare Buyin-B Inbound Interface ')
+    dsn_tns = cx_Oracle.makedsn(DB_Host, DB_Port, service_name=DB_Service)
+    conn = cx_Oracle.connect(user=DB_UserName, password=DB_Password, dsn=dsn_tns)
+    c = conn.cursor()
+    SQL = """
+    DECLARE 
+    PROCSTAT VARCHAR2(32767);
+    BEGIN 
+    PROCSTAT := NULL;
+    SIEBEL.KIES_MDCR_SMIB_IB_PLSQL ( PROCSTAT );
+    DBMS_OUTPUT.Put_Line('PROCSTAT = ' || PROCSTAT);
+    DBMS_OUTPUT.Put_Line('');
+    COMMIT; 
+    END;
+    """
+    c.execute(SQL)
+    conn.close()
+    print('Ending..... Medicare Buyin-B Inbound Interface  ')
+
+    
+    # running .IFB file
+    print('Starting.... .Siebel workflow for Medicare Buyin-B Inbound Interface ')
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(AB_Endpoint, port=AB_Port, username=AB_UserName, password=AB_Password)
+    stdin, stdout, stderr = client.exec_command(
+        'cd /u01/app/abscripts ;pwd ; sh RunSiebelJob.sh "run task for comp EIM with Config=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin/KIES_MED_SMIB.ifb'',ErrorFlags=1,LogDir=''/u01/app/siebel/8.2.2/ses/siebsrvr/admin'',SQLFlags=1,TraceFlags=8"; date')    
+    print('Ending.... .Siebel workflow for Medicare Buyin-B Inbound Interface ')
